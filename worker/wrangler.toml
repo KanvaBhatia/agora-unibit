@@ -1,0 +1,36 @@
+name = "clicky-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Non-sensitive defaults. Override per-environment as needed.
+MURF_VOICE_ID = "Gordon"
+
+# Durable Object that holds the screen-context frame + latest [POINT] so they're
+# shared across all Worker isolates. Module-level variables are per-isolate and
+# get reset, which is why the LLM-turn isolate never saw the uploaded frame.
+[[durable_objects.bindings]]
+name = "SCREEN_STATE"
+class_name = "ScreenState"
+script_name = "clicky-proxy"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ScreenState"]
+
+# Observability — stream Worker logs (console.*, errors, invocation logs) to the
+# Cloudflare dashboard / `wrangler tail` so we can debug the Agora agent's
+# /agent/llm calls in real time.
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = false
+head_sampling_rate = 1
+persist = true
+
+[observability.issue_detection]
+enabled = false
